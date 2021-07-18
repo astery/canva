@@ -2,7 +2,7 @@
 
 ## What is this?
 
-This is the solution to the test assignment. You can read the problem description in [pages/canva.md](https://github.com/astery/canva/blob/master/pages/canva.md)
+This is the solution to the test assignment. You can read the problem description in [pages/canvas.md](https://github.com/astery/canva/blob/master/pages/canvas.md)
 
 Consider to read my internal reflections about development process in [pages/reflections.md](https://github.com/astery/canva/blob/master/pages/reflections.md)
 
