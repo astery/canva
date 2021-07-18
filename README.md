@@ -1,4 +1,20 @@
 # Canva
 
-**TODO: Add description**
+## What is this?
 
+This is the solution to the test assignment. You can read the problem description in [pages/canva.md](https://github.com/astery/canva/blob/master/pages/canva.md)
+
+Consider to read my internal reflections about development process in [pages/reflections.md](https://github.com/astery/canva/blob/master/pages/reflections.md)
+
+## Dependencies
+
+- Elixir: 1.12
+- Erlang/OTP: 24.0
+
+## Setup
+
+1. `mix deps.get`
+
+## Running tests
+
+`mix test`
