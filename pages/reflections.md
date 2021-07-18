@@ -1,5 +1,9 @@
 # Reflections
 
+Steps are written in the moment and in chronological order.
+
+## Steps
+
 - We need to give a name to the application for system representing an ASCII art
   drawing canvas.
   
@@ -13,3 +17,15 @@
   contextes, I will go with umbrella application. It will give me strictier 
   boundaries and the ability to distribute canvas library separately if we will
   need that in the future.
+  
+- Before actually implementing something I want to prepare the repository to work.
+
+  I want to add local hooks to prevent accidentally commit code that is:
+
+  - Unformatted
+  - emitting warnings
+  - having dialyxir issues
+  - having credo issues
+  - failing tests
+
+  After that do the same checks on the repository side.
