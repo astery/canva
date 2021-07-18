@@ -1,3 +1,5 @@
+[![build](https://github.com/astery/canva/actions/workflows/ci.yml/badge.svg)](https://github.com/astery/canva/actions)
+
 # Canva
 
 ## What is this?
