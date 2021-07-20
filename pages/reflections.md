@@ -83,6 +83,8 @@ no drastical changes, I extract them in appropriate files.
 I want to have ability to compare different fill algorithms and canvas data
 holding structures, so I extract a Canvas protocol for that purpose.
 
+Also in order to import types I will declare them distinct modules.
+
 ### First Canvas module implementation
 
 For the first implemtation I would go by easiest path. I choose a Map to store

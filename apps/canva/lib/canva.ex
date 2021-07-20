@@ -1,6 +1,33 @@
 defmodule Canva do
   @moduledoc """
-  Documentation for `Canva`.
+  `Canva` is main point to interact with render functions of canvas
+
+  ## Examples:
+
+  iex> alias Canva.Size
+  iex> alias Canva.Operations.Rectangle
+  iex> canvas = Canva.build_canvas(%Size{width: 4, height: 5})
+  iex> canvas = Canva.apply_operations(canvas, [
+  ...>   %Rectangle{
+  ...>     x: 0,
+  ...>     y: 0,
+  ...>     size: %Size{width: 4, height: 5},
+  ...>     fill_char: "."
+  ...>   },
+  ...>   %Rectangle{
+  ...>     x: 1,
+  ...>     y: 1,
+  ...>     size: %Size{width: 3, height: 3},
+  ...>     outline_char: "@"
+  ...>   }
+  ...> ])
+  iex> Canva.render_canvas(canvas)
+  "....
+  .@@@
+  .@ @
+  .@@@
+  ....
+  "
   """
 
   defmodule Size do
@@ -98,7 +125,10 @@ defmodule Canva do
 
   defprotocol Canvas do
     @moduledoc """
-    Drawing space area to apply drawing operations
+    Drawing space area to apply drawing operations.
+
+    This protocol gives ability to have different
+    rendering strategies in Canva.
     """
 
     @doc "Changes canvas state"
@@ -112,7 +142,7 @@ defmodule Canva do
 
   defmodule MapCanvas do
     @moduledoc """
-    Canvas based on Map
+    Canvas based on Map.
     """
 
     defstruct size: nil, map: %{}, empty_char: " "
@@ -200,6 +230,9 @@ defmodule Canva do
     end
   end
 
+  @doc """
+  Uses MapCanvas rendring strategy
+  """
   def build_canvas(size), do: MapCanvas.build(size)
 
   def apply_operations(canvas, operations),
