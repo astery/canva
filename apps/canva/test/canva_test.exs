@@ -5,29 +5,29 @@ defmodule CanvaTest do
   alias Canva.Size
   alias Canva.Operations.Rectangle
   alias Canva.Operations.Flood
-  alias Canva.MapCanvas
+  alias Canva.RenderContextes.MapBased
 
-  describe "MapCanvas" do
+  describe "RenderContextes.MapBased" do
     setup do
-      %{canvas: MapCanvas.build(%Size{width: 3, height: 5})}
+      %{canvas: MapBased.build(%Size{width: 3, height: 5})}
     end
 
     test "get/2 should return out_of_bounds if beyond", ctx do
-      assert :out_of_bounds = MapCanvas.get(ctx.canvas, 3, 6)
-      assert :out_of_bounds = MapCanvas.get(ctx.canvas, 4, 5)
-      assert :out_of_bounds = MapCanvas.get(ctx.canvas, 4, -5)
+      assert :out_of_bounds = MapBased.get(ctx.canvas, 3, 6)
+      assert :out_of_bounds = MapBased.get(ctx.canvas, 4, 5)
+      assert :out_of_bounds = MapBased.get(ctx.canvas, 4, -5)
     end
 
     test "set/2 should update character at position", ctx do
-      assert nil == MapCanvas.get(ctx.canvas, 0, 0)
-      assert %{} = canvas = MapCanvas.set(ctx.canvas, 0, 0, "x")
-      assert "x" == MapCanvas.get(canvas, 0, 0)
-      assert %{} = canvas = MapCanvas.set(canvas, 0, 0, nil)
-      assert nil == MapCanvas.get(canvas, 0, 0)
+      assert nil == MapBased.get(ctx.canvas, 0, 0)
+      assert %{} = canvas = MapBased.set(ctx.canvas, 0, 0, "x")
+      assert "x" == MapBased.get(canvas, 0, 0)
+      assert %{} = canvas = MapBased.set(canvas, 0, 0, nil)
+      assert nil == MapBased.get(canvas, 0, 0)
     end
 
     test "set/2 should return out_of_bounds if beyond", ctx do
-      assert :out_of_bounds = MapCanvas.set(ctx.canvas, 4, 5, "x")
+      assert :out_of_bounds = MapBased.set(ctx.canvas, 4, 5, "x")
     end
   end
 

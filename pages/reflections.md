@@ -66,7 +66,7 @@ Let's try following:
 - Canvas{id, size}
 - Operation
 - Operations.Rectangle
-- Operations.Fill
+- Operations.Flood
 
 - canvas = Canva.apply(canvas, operation)
 - ascii_string = Canva.render(canvas)
@@ -89,3 +89,12 @@ Also in order to import types I will declare them distinct modules.
 
 For the first implemtation I would go by easiest path. I choose a Map to store
 canvas state, and a fill algorithm which recursively goes in four empty directions.
+
+### Splitting canvas from render artifacts
+
+In the future, I want to be able to pass canvas structure for saving, and it is better
+to avoid passing where any render artifacts. For that reason, I extract
+render and apply functions from the Canvas module to the new RenderContext protocol.
+But I still need that convenient structure to store operations and render 
+context simultaneously, so let's emerge RenderableCanvas.
+
