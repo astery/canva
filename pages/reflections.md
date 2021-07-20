@@ -113,3 +113,10 @@ functions, it should help to test them in insolation (but on this stage
 my demands are covered with Canva integration test, so I'll use it only
 to test some specific edge cases), I will call that RenderContext 
 implementation as RenderContexts.Composable
+
+### Adding alternative canvas data structure implementation
+
+We added all preparation work to easily add a new variant to represent points. 
+It will be based on :array, so call it ArrayPoints.
+
+We already have tests for its behaviour, therefore reuse them.
