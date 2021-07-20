@@ -71,12 +71,29 @@ defmodule Canva do
   alias Canva.RenderContexts
   alias Canva.RenderContexts.Composable
   alias Canva.RenderContexts.Composable.Points.MapPoints
+  alias Canva.RenderContexts.Composable.Points.ArrayPoints
+
+  @doc """
+  Uses ArrayPoints rendering strategy
+  """
+  @spec build_array_based_canvas(Size.t()) :: RenderableCanvas.t()
+  def build_array_based_canvas(size),
+    do:
+      RenderableCanvas.build(
+        Canvas.build(size),
+        RenderContexts.Composable.build(
+          size,
+          &ArrayPoints.build/1,
+          &Composable.Algorithms.Rectangle.apply/2,
+          &Composable.Algorithms.Flood.apply/2
+        )
+      )
 
   @doc """
   Uses MapPoints rendering strategy
   """
-  @spec build_canvas(Size.t()) :: RenderableCanvas.t()
-  def build_canvas(size),
+  @spec build_map_based_canvas(Size.t()) :: RenderableCanvas.t()
+  def build_map_based_canvas(size),
     do:
       RenderableCanvas.build(
         Canvas.build(size),
@@ -87,6 +104,11 @@ defmodule Canva do
           &Composable.Algorithms.Flood.apply/2
         )
       )
+
+  @doc """
+  Default canvas builder (uses &build_map_based_canvas/1)
+  """
+  def build_canvas(size), do: build_map_based_canvas(size)
 
   @doc """
   Look for &RenderableCanvas.add_and_apply/2

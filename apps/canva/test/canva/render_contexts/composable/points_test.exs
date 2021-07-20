@@ -13,7 +13,9 @@ defmodule Canva.RenderContexts.Composable.PointsTest do
   {:consolidated, implementations} = Points.__protocol__(:impls)
 
   for implementation <- implementations do
-    describe to_string(implementation) do
+    short_name = implementation |> Module.split() |> hd()
+
+    describe short_name do
       setup ctx do
         %{points: unquote(implementation).build(ctx.size)}
       end
