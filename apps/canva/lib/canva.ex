@@ -219,90 +219,113 @@ defmodule Canva do
     end
   end
 
-  defmodule RenderContextes do
-    defmodule MapBased do
+  defmodule RenderContexts do
+    defmodule Composable do
       @moduledoc """
-      RenderContext based on Map module.
+      This module is RenderContext which can be configured which
+      internal data structure implementing Points behaviour to use
+      and render algorithms (algorithms not implemented
+      yet, hardcoded) which implemented utilizing Points behaviour
       """
 
-      defstruct size: nil, map: %{}, empty_char: " "
+      defprotocol Points do
+        @moduledoc """
+        Defines simple get/set points interface to Composable RenderContext
+        :points field
+        """
 
-      import Size
+        @doc "Returns char at point"
+        @spec get(t(), integer(), integer()) :: AsciiChar.t() | nil | :out_of_bounds
+        def get(canvas, x, y)
+
+        @doc "Sets char at point"
+        @spec set(t(), integer(), integer(), AsciiChar.t()) :: t() | :out_of_bounds
+        def set(canvas, x, y, char)
+      end
+
+      alias Canva.Operations.Rectangle
+      alias Canva.Operations.Flood
+
+      @type build_points_fn :: (Size.t() -> Points.t())
+      @type apply_rectangle_fn :: (t(), Rectangle.t() -> t())
+      @type apply_flood_fn :: (t(), Flood.t() -> t())
+
+      defstruct size: nil,
+                empty_char: " ",
+                points: nil,
+                build_points_fn: nil,
+                apply_rectangle_fn: nil,
+                apply_flood_fn: nil
 
       @type t() :: %__MODULE__{
               size: Size.t(),
-              map: %{},
-              empty_char: AsciiChar.t()
+              empty_char: AsciiChar.t(),
+              points: [Points.t()],
+              build_points_fn: build_points_fn(),
+              apply_rectangle_fn: apply_rectangle_fn(),
+              apply_flood_fn: apply_flood_fn()
             }
 
-      @doc "Returns an empty canvas of given size"
-      @spec build(Size.t()) :: t()
-      def build(size), do: %__MODULE__{size: size}
+      @doc "Helper delegates call to Points.get"
+      @spec get(t(), integer(), integer()) :: AsciiChar.t() | nil | :out_of_bounds
+      def get(canvas, x, y), do: Points.get(canvas.points, x, y)
 
-      def get(c, x, y) when out_of_bounds(c.size, x, y), do: :out_of_bounds
-
-      def get(c, x, y) do
-        Map.get(c.map, {x, y})
+      @doc "Helper delegates call to Points.set and updates them"
+      @spec set(t(), integer(), integer(), AsciiChar.t()) :: t() | :out_of_bounds
+      def set(canvas, x, y, char) do
+        update_in(canvas, [Access.key!(:points)], &Points.set(&1, x, y, char))
       end
 
-      def set(c, x, y, _) when out_of_bounds(c.size, x, y), do: :out_of_bounds
+      @doc """
+      Returns a configured RenderContext
 
-      def set(c, x, y, char) do
-        put_in(c, [Access.key!(:map), {x, y}], char)
-      end
+      ## Params:
+
+        - size - a Size struct
+        - build_points_fn - a function that returns initial state for struct
+            implementing points behaviour
+       - apply_rectangle_fn - a function that applies rectangle operation
+             to render context
+       - apply_flood_fn - a function that applies flood operation to render context
+      """
+      @spec build(Size.t(), build_points_fn(), apply_rectangle_fn(), apply_flood_fn()) :: t()
+      def build(size, build_points_fn, apply_rectangle_fn, apply_flood_fn),
+        do: %__MODULE__{
+          size: size,
+          points: build_points_fn.(size),
+          apply_flood_fn: apply_flood_fn,
+          build_points_fn: build_points_fn,
+          apply_rectangle_fn: apply_rectangle_fn
+        }
 
       defimpl RenderContext do
         alias Canva.Operations.Rectangle
         alias Canva.Operations.Flood
 
-        def set_size(renderer, size), do: %{renderer | size: size}
+        def set_size(%Composable{} = ctx, size),
+          do: %{
+            ctx
+            | size: size,
+              points: ctx.build_points_fn.(size)
+          }
 
-        def set_whitespace_char(renderer, char), do: %{renderer | empty_char: char}
+        def set_whitespace_char(%Composable{} = ctx, char), do: %{ctx | empty_char: char}
 
-        def apply(%MapBased{} = canvas, %Rectangle{} = rect) do
-          left = rect.x
-          top = rect.y
-          right = rect.x + rect.size.width - 1
-          bottom = rect.y + rect.size.height - 1
-          fill_char = rect.fill_char
-          outline_char = rect.outline_char || rect.fill_char
-
-          for y <- top..bottom, x <- left..right, reduce: canvas do
-            canvas ->
-              inside? = y > top and y < bottom and x > left and x < right
-              char = if(inside?, do: fill_char, else: outline_char)
-
-              MapBased.set(canvas, x, y, char)
-              |> case do
-                :out_of_bounds -> canvas
-                canvas -> canvas
-              end
-          end
+        def apply(%Composable{} = ctx, %Rectangle{} = rect) do
+          ctx.apply_rectangle_fn.(ctx, rect)
         end
 
-        def apply(%MapBased{} = canvas, %Flood{} = flood) do
-          flood(canvas, flood.x, flood.y, flood.fill_char)
+        def apply(%Composable{} = ctx, %Flood{} = flood) do
+          ctx.apply_flood_fn.(ctx, flood)
         end
 
-        defp flood(canvas, x, y, fill_char) do
-          MapBased.get(canvas, x, y)
-          |> case do
-            nil ->
-              MapBased.set(canvas, x, y, fill_char)
-              |> flood(x + 1, y, fill_char)
-              |> flood(x - 1, y, fill_char)
-              |> flood(x, y + 1, fill_char)
-              |> flood(x, y - 1, fill_char)
-
-            _ ->
-              canvas
-          end
-        end
-
-        def render(%MapBased{size: size} = canvas) do
+        # maps every point line by line
+        # producing iodata list which
+        # is converted at the last step
+        def render(%Composable{size: size} = canvas) do
           for y <- 0..(size.height - 1) do
             for x <- 0..(size.width - 1) do
-              MapBased.get(canvas, x, y)
+              Composable.get(canvas, x, y)
               |> case do
                 nil -> canvas.empty_char
                 char -> char
@@ -313,13 +336,127 @@ defmodule Canva do
         end
       end
     end
+
+    defmodule Composable.Algorithms do
+      defmodule Rectangle do
+        @moduledoc """
+        Walks every point from left-top to right-bottom where
+        the rectangle should be drawn and set appropriate character
+        checking if current pointer is on the edge of the rectangle
+        """
+
+        alias RenderContexts.Composable
+        alias Canva.Operations.Rectangle
+
+        @spec apply(Composable.t(), Rectangle.t()) :: Composable.t()
+        def apply(%Composable{} = ctx, %Rectangle{} = rect) do
+          left = rect.x
+          top = rect.y
+          right = rect.x + rect.size.width - 1
+          bottom = rect.y + rect.size.height - 1
+          fill_char = rect.fill_char
+          outline_char = rect.outline_char || rect.fill_char
+
+          for y <- top..bottom, x <- left..right, reduce: ctx do
+            ctx ->
+              inside? = y > top and y < bottom and x > left and x < right
+              char = if(inside?, do: fill_char, else: outline_char)
+
+              Composable.set(ctx, x, y, char)
+              |> case do
+                :out_of_bounds -> ctx
+                ctx -> ctx
+              end
+          end
+        end
+      end
+
+      defmodule Flood do
+        @moduledoc """
+        Draws the fill character to the start coordinate, and continues
+        to attempt drawing the character around (up, down, left, right)
+        in each direction from the position it was drawn at, as long as a
+        different character, or a border of the canvas, is not reached.
+        """
+
+        alias RenderContexts.Composable
+        alias Canva.Operations.Flood
+
+        @spec apply(Composable.t(), Flood.t()) :: Composable.t()
+        def apply(%Composable{} = ctx, %Flood{} = flood) do
+          flood(ctx, flood.x, flood.y, flood.fill_char)
+        end
+
+        defp flood(ctx, x, y, fill_char) do
+          Composable.get(ctx, x, y)
+          |> case do
+            nil ->
+              Composable.set(ctx, x, y, fill_char)
+              |> flood(x + 1, y, fill_char)
+              |> flood(x - 1, y, fill_char)
+              |> flood(x, y + 1, fill_char)
+              |> flood(x, y - 1, fill_char)
+
+            _ ->
+              ctx
+          end
+        end
+      end
+    end
+
+    defmodule Composable.Points.MapPoints do
+      @moduledoc """
+      Points based on Map module.
+
+      Stores {x, y} tuple as key and character as value.
+      """
+
+      defstruct map: %{}, size: nil
+
+      alias RenderContexts.Composable.Points
+      import Size
+
+      @type t() :: %__MODULE__{
+              size: Size.t(),
+              map: %{}
+            }
+
+      @doc """
+      Returns empty map. Has nothing to preallocate.
+      """
+      @spec build(Size.t()) :: t()
+      def build(size), do: %__MODULE__{size: size}
+
+      defimpl Points do
+        def get(c, x, y) when out_of_bounds(c.size, x, y), do: :out_of_bounds
+        def get(c, x, y), do: Map.get(c.map, {x, y})
+
+        def set(c, x, y, _) when out_of_bounds(c.size, x, y), do: :out_of_bounds
+
+        def set(c, x, y, char) do
+          put_in(c, [Access.key!(:map), {x, y}], char)
+        end
+      end
+    end
   end
 
+  alias RenderContexts.Composable
+  alias RenderContexts.Composable.Points.MapPoints
+
   @doc """
-  Uses MapBased rendring strategy
+  Uses MapPoints rendering strategy
   """
   def build_canvas(size),
-    do: RenderableCanvas.build(Canvas.build(size), %RenderContextes.MapBased{})
+    do:
+      RenderableCanvas.build(
+        Canvas.build(size),
+        RenderContexts.Composable.build(
+          size,
+          &MapPoints.build/1,
+          &Composable.Algorithms.Rectangle.apply/2,
+          &Composable.Algorithms.Flood.apply/2
+        )
+      )
 
   def apply_operations(canvas, operations),
     do: Enum.reduce(operations, canvas, &RenderableCanvas.add_and_apply(&2, &1))

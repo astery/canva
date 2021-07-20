@@ -98,3 +98,18 @@ render and apply functions from the Canvas module to the new RenderContext proto
 But I still need that convenient structure to store operations and render 
 context simultaneously, so let's emerge RenderableCanvas.
 
+### Extracting access behaviour
+
+There is a wide class of fill algorithms that rely on "get/set points" access
+behaviour. I have an assumption that using :array module will give us a small 
+boost in reading and a lesser memory footprint.
+
+If we talking about here is more performance gain we can get, when
+we shall go and try another algorithm for Flood operation, but access implementation
+touches all operations, so we start from here.
+
+Also, I want to pass algorithms as parameters to RenderContext as simple
+functions, it should help to test them in insolation (but on this stage
+my demands are covered with Canva integration test, so I'll use it only
+to test some specific edge cases), I will call that RenderContext 
+implementation as RenderContexts.Composable
