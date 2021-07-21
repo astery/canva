@@ -9,6 +9,9 @@
 # move said applications out of the umbrella.
 import Config
 
+config :nanoid,
+  alphabet: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
 # Sample configuration:
 #
 #     config :logger, :console,
