@@ -144,3 +144,8 @@ As expected map version is ~1.3x slower and consumes ~1.29x memory more
 than the array version. Map version becomes slower with bigger canvas size
 but negligible.
 
+### Implementing CanvaFiles
+
+First of all we describe desired behaviour in test. That should be easy
+recursive definition we want to recieve same canvas struct that we stored
+earlier.
