@@ -146,13 +146,13 @@ but negligible.
 
 ### Deciding that to do next
 
-I have in plans to do:
+I have plans to do:
 
-  - add a tailrecursive flood algorithm version
+  - add a tail recursive flood algorithm version
   - add a scanning line flood algorithm version
-  - add a renderer not based on points but, tree based.
+  - add a renderer not based on points but, tree-based.
 
-But I aslo want to add persistence layer and web-interface, so I whould
+But I also want to add persistence layer and web-interface, so I would
 rather go in that direction
 
 ### Persistense layer
