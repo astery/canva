@@ -1,6 +1,6 @@
 defprotocol Canva.RenderContext do
   @moduledoc """
-  Represents intermediate render result.
+  Defines render strategy and represents an intermediate render result
 
   This protocol gives ability to have different
   rendering strategies.

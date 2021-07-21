@@ -62,20 +62,23 @@ defmodule Canva.RenderContexts.Composable do
   @doc """
   Returns a configured RenderContext
 
+  You must call set_size later, because by default canvas initialized with zero width.
+
   ## Params:
 
-    - size - a Size struct
     - build_points_fn - a function that returns initial state for struct
         implementing points behaviour
    - apply_rectangle_fn - a function that applies rectangle operation
          to render context
    - apply_flood_fn - a function that applies flood operation to render context
   """
-  @spec build(Size.t(), build_points_fn(), apply_rectangle_fn(), apply_flood_fn()) :: t()
-  def build(size, build_points_fn, apply_rectangle_fn, apply_flood_fn),
+  @spec build(build_points_fn(), apply_rectangle_fn(), apply_flood_fn()) :: t()
+  def build(build_points_fn, apply_rectangle_fn, apply_flood_fn),
     do: %__MODULE__{
-      size: size,
-      points: build_points_fn.(size),
+      # to avoid depending on size at initialization
+      # use null obj to have consistent state until set_size is called
+      size: %Size{},
+      points: build_points_fn.(%Size{}),
       apply_flood_fn: apply_flood_fn,
       build_points_fn: build_points_fn,
       apply_rectangle_fn: apply_rectangle_fn

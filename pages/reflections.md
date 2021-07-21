@@ -120,3 +120,10 @@ We added all preparation work to easily add a new variant to represent points.
 It will be based on :array, so call it ArrayPoints.
 
 We already have tests for its behaviour, therefore reuse them.
+
+I'm planning to write some data generation functions for a future benchmark.
+And I saw a flaw in the Canva module api - where is no function we can pass
+bare Canvas module to apply and render it, that is because we hid
+building Canvas behind functions describing render strategy. Let's split
+these functions to give an ability to explicitly pass bare canvas and its
+strategy.

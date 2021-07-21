@@ -1,6 +1,16 @@
 defmodule Canva do
   @moduledoc """
-  `Canva` is main point to interact with render functions of canvas
+  `Canva` is a main point of interaction with render functions of canvas.
+
+  Canvas is stucture for describing canvas size, whitespace character,
+  and holding operations history.
+
+  You can `&add_operations/2` or `&add_and_apply_operations/2` operations to it,
+  the difference is that the first one doesn't perform any computations
+  related to rendering.
+
+  When you call `&render_canvas/1` it will apply all operations if it was not done
+  yet.
 
   ## Examples:
 
@@ -8,18 +18,37 @@ defmodule Canva do
   iex> alias Canva.Operations.Rectangle
   iex> canvas = Canva.build_canvas(%Size{width: 4, height: 5})
   iex> canvas = Canva.apply_operations(canvas, [
-  ...>   %Rectangle{
-  ...>     x: 0,
-  ...>     y: 0,
-  ...>     size: %Size{width: 4, height: 5},
-  ...>     fill_char: "."
-  ...>   },
-  ...>   %Rectangle{
-  ...>     x: 1,
-  ...>     y: 1,
-  ...>     size: %Size{width: 3, height: 3},
-  ...>     outline_char: "@"
-  ...>   }
+  ...>   %Rectangle{x: 0, y: 0, size: %Size{width: 4, height: 5}, outline_char: "."},
+  ...>   %Rectangle{x: 1, y: 1, size: %Size{width: 3, height: 3}, outline_char: "@"}
+  ...> ])
+  iex> Canva.render_canvas(canvas)
+  "....
+  .@@@
+  .@ @
+  .@@@
+  ....
+  "
+
+  RenderableCanvas is a wrapper for Canvas and its RenderContext it is created
+  explicitly or implicitly when you apply operations to a canvas.
+
+  If you want to specify render strategy explicitly, you use
+  `build_renderable_context/2` function to build canvas and pass it to
+  apply and render functions as usual.
+
+  build_*_render_ctx functions define a strategy that will
+  be used for rendering canvas.
+
+  ## Examples:
+
+  iex> alias Canva.Size
+  iex> alias Canva.Operations.Rectangle
+  iex> canvas = Canva.build_canvas(%Size{width: 4, height: 5})
+  iex> strategy = Canva.build_composable_array_based_render_ctx()
+  iex> canvas = Canva.build_renderable_canvas(canvas, strategy)
+  iex> canvas = Canva.apply_operations(canvas, [
+  ...>   %Rectangle{x: 0, y: 0, size: %Size{width: 4, height: 5}, outline_char: "."},
+  ...>   %Rectangle{x: 1, y: 1, size: %Size{width: 3, height: 3}, outline_char: "@"}
   ...> ])
   iex> Canva.render_canvas(canvas)
   "....
@@ -68,58 +97,111 @@ defmodule Canva do
 
   alias Canva.Canvas
   alias Canva.RenderableCanvas
+  alias Canva.RenderContext
   alias Canva.RenderContexts
   alias Canva.RenderContexts.Composable
   alias Canva.RenderContexts.Composable.Points.MapPoints
   alias Canva.RenderContexts.Composable.Points.ArrayPoints
 
   @doc """
-  Uses ArrayPoints rendering strategy
+  Creates Canvas struct
+
+  Alias for &Canvas.build/1
   """
-  @spec build_array_based_canvas(Size.t()) :: RenderableCanvas.t()
-  def build_array_based_canvas(size),
-    do:
-      RenderableCanvas.build(
-        Canvas.build(size),
-        RenderContexts.Composable.build(
-          size,
-          &ArrayPoints.build/1,
-          &Composable.Algorithms.Rectangle.apply/2,
-          &Composable.Algorithms.Flood.apply/2
-        )
-      )
+  def build_canvas(size), do: Canvas.build(size)
 
   @doc """
-  Uses MapPoints rendering strategy
+  Creates RenderableCanvas struct.
+
+  Use it when you want to explicitly specify a rendering strategy
+  instead of a default one.
+
+  ## Params
+
+  - canvas - is regular Canvas created by &build_canvas/& function
+  - render_ctx - is RenderContext can be created by &build_*_render_ctx/& functions
+
+  Alias for &Canvas.build/1
   """
-  @spec build_map_based_canvas(Size.t()) :: RenderableCanvas.t()
-  def build_map_based_canvas(size),
-    do:
-      RenderableCanvas.build(
-        Canvas.build(size),
-        RenderContexts.Composable.build(
-          size,
-          &MapPoints.build/1,
-          &Composable.Algorithms.Rectangle.apply/2,
-          &Composable.Algorithms.Flood.apply/2
-        )
-      )
+  def build_renderable_canvas(canvas, render_ctx),
+    do: RenderableCanvas.build(canvas, render_ctx)
 
   @doc """
-  Default canvas builder (uses &build_map_based_canvas/1)
+  Creates RenderContext with specified rendering strategy
+
+  Uses regular elixir map (Look for MapPoints module)
   """
-  def build_canvas(size), do: build_map_based_canvas(size)
+  @spec build_composable_map_based_render_ctx() :: RenderContext.t()
+  def build_composable_map_based_render_ctx() do
+    RenderContexts.Composable.build(
+      &MapPoints.build/1,
+      &Composable.Algorithms.Rectangle.apply/2,
+      &Composable.Algorithms.Flood.apply/2
+    )
+  end
 
   @doc """
+  Creates RenderContext with specified rendering strategy
+
+  Uses erlang :array (Look for ArrayPoints module)
+  """
+  @spec build_composable_array_based_render_ctx() :: RenderContext.t()
+  def build_composable_array_based_render_ctx() do
+    RenderContexts.Composable.build(
+      &ArrayPoints.build/1,
+      &Composable.Algorithms.Rectangle.apply/2,
+      &Composable.Algorithms.Flood.apply/2
+    )
+  end
+
+  @doc """
+  Default render strategy to use then it not specified explicitly
+
+  Alias for &build_composable_map_based_render_ctx/0
+  """
+  def build_default_render_strategy(), do: build_composable_map_based_render_ctx()
+
+  @doc """
+  Adds operations into regular Canvas.
+
+  Use this function when you don't need to render this later.
+
+  Look for &Canvas.add/2
+  """
+  @spec add_operations(Canvas.t(), [Operation.t()]) :: Canvas.t()
+  def add_operations(%Canvas{} = canvas, operations),
+    do: Enum.reduce(operations, canvas, &Canvas.add(&2, &1))
+
+  @doc """
+  Adds operations and calculates next RenderContext state.
+
+  Converts regular Canvas into RenderableCanvas with default
+  rendering strategy if need.
+
   Look for &RenderableCanvas.add_and_apply/2
   """
+  @spec apply_operations(Canvas.t(), [Operation.t()]) :: RenderableCanvas.t()
+  def apply_operations(%Canvas{} = canvas, operations) do
+    build_renderable_canvas(canvas, build_default_render_strategy())
+    |> apply_operations(operations)
+  end
+
   @spec apply_operations(RenderableCanvas.t(), [Operation.t()]) :: RenderableCanvas.t()
-  def apply_operations(canvas, operations),
+  def apply_operations(%RenderableCanvas{} = canvas, operations),
     do: Enum.reduce(operations, canvas, &RenderableCanvas.add_and_apply(&2, &1))
 
   @doc """
   Returns string representation of canvas
+
+  Converts regular Canvas into RenderableCanvas with default
+  rendering strategy if need.
   """
+  @spec render_canvas(Canvas.t()) :: String.t()
+  def render_canvas(%Canvas{} = canvas) do
+    build_renderable_canvas(canvas, build_default_render_strategy())
+    |> render_canvas()
+  end
+
   @spec render_canvas(RenderableCanvas.t()) :: String.t()
-  def render_canvas(canvas), do: RenderableCanvas.render(canvas)
+  def render_canvas(%RenderableCanvas{} = canvas), do: RenderableCanvas.render(canvas)
 end

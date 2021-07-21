@@ -13,7 +13,7 @@ defmodule Canva.RenderContexts.Composable.PointsTest do
   {:consolidated, implementations} = Points.__protocol__(:impls)
 
   for implementation <- implementations do
-    short_name = implementation |> Module.split() |> hd()
+    short_name = implementation |> Module.split() |> List.last()
 
     describe short_name do
       setup ctx do

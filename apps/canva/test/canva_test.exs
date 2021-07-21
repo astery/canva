@@ -8,19 +8,19 @@ defmodule CanvaTest do
 
   # Runs same tests for all public canvas configurations
   # (Canva.build_* functions)
-  canvas_builders = [
-    &Canva.build_array_based_canvas/1,
-    &Canva.build_map_based_canvas/1
+  canvas_strategies = [
+    &Canva.build_composable_map_based_render_ctx/0,
+    &Canva.build_composable_array_based_render_ctx/0
   ]
 
-  for canvas_builder <- canvas_builders do
-    describe inspect(canvas_builder) do
+  for strategy <- canvas_strategies do
+    describe inspect(strategy) do
       setup do
-        %{build_canvas: unquote(canvas_builder)}
+        %{strategy: unquote(strategy)}
       end
 
-      test "render/2 should rener area filled with spaces on empty canvas", ctx do
-        canvas = ctx.build_canvas.(%Size{width: 1, height: 3})
+      test "render/2 should render area filled with spaces on empty canvas", ctx do
+        canvas = build_canvas(%Size{width: 1, height: 3}, ctx.strategy)
 
         assert """
 
@@ -31,7 +31,7 @@ defmodule CanvaTest do
 
       test "render/2 should render outline at canvas border", ctx do
         size = %Size{width: 3, height: 5}
-        canvas = ctx.build_canvas.(size)
+        canvas = build_canvas(size, ctx.strategy)
 
         operations = [
           %Rectangle{x: 0, y: 0, size: size, outline_char: "@"}
@@ -48,7 +48,7 @@ defmodule CanvaTest do
 
       test "render/2 should fill whole canvas", ctx do
         size = %Size{width: 3, height: 5}
-        canvas = ctx.build_canvas.(size)
+        canvas = build_canvas(size, ctx.strategy)
 
         operations = [
           %Rectangle{x: 0, y: 0, size: size, fill_char: "@"}
@@ -64,7 +64,7 @@ defmodule CanvaTest do
       end
 
       test "render/2 fixture 1", ctx do
-        canvas = ctx.build_canvas.(%Size{width: 24, height: 9})
+        canvas = build_canvas(%Size{width: 24, height: 9}, ctx.strategy)
 
         operations = [
           %Rectangle{x: 3, y: 2, size: size(5, 3), outline_char: "@", fill_char: "X"},
@@ -85,7 +85,7 @@ defmodule CanvaTest do
       end
 
       test "render/2 fixture 2", ctx do
-        canvas = ctx.build_canvas.(%Size{width: 21, height: 8})
+        canvas = build_canvas(%Size{width: 21, height: 8}, ctx.strategy)
 
         operations = [
           %Rectangle{x: 14, y: 0, size: size(7, 6), outline_char: nil, fill_char: "."},
@@ -106,7 +106,7 @@ defmodule CanvaTest do
       end
 
       test "render/2 fixture 3", ctx do
-        canvas = ctx.build_canvas.(%Size{width: 21, height: 8})
+        canvas = build_canvas(%Size{width: 21, height: 8}, ctx.strategy)
 
         operations = [
           %Rectangle{x: 14, y: 0, size: size(7, 6), outline_char: nil, fill_char: "."},
@@ -127,6 +127,11 @@ defmodule CanvaTest do
                """ = render(canvas, operations)
       end
     end
+  end
+
+  defp build_canvas(size, strategy) do
+    Canva.build_canvas(size)
+    |> Canva.build_renderable_canvas(strategy.())
   end
 
   defp render(canvas, operations) do
