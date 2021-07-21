@@ -24,4 +24,5 @@ Consider to add local git hooks to prevent pushing malformed commit:
 
 ## Running tests
 
-`mix test`
+- `mix test`
+- `mix benchmark`
