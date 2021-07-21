@@ -17,8 +17,7 @@ defmodule Canva.MixProject do
 
   def application do
     [
-      extra_applications: [:logger],
-      mod: {Canva.Application, []}
+      extra_applications: [:logger]
     ]
   end
 
