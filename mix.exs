@@ -23,7 +23,8 @@ defmodule CanvaUmbrella.MixProject do
 
   defp aliases do
     [
-      benchmark: ["run ./apps/canva/samples/canva_impls.exs"]
+      benchmark: ["cmd --app canva mix benchmark"],
+      setup: ["cmd mix setup"]
     ]
   end
 end
