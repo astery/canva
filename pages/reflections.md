@@ -144,6 +144,23 @@ As expected map version is ~1.3x slower and consumes ~1.29x memory more
 than the array version. Map version becomes slower with bigger canvas size
 but negligible.
 
+### Deciding that to do next
+
+I have in plans to do:
+
+  - add a tailrecursive flood algorithm version
+  - add a scanning line flood algorithm version
+  - add a renderer not based on points but, tree based.
+
+But I aslo want to add persistence layer and web-interface, so I whould
+rather go in that direction
+
+### Persistense layer
+
+When we started our journey I wrote what decided to store canvases in files.
+I will describe an interface to save files in order to ease testing
+of future features, and give ability to exchange that for s3 for example.
+
 ### Implementing CanvaFiles
 
 First of all we describe desired behaviour in test. That should be easy
