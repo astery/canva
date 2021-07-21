@@ -127,3 +127,20 @@ bare Canvas module to apply and render it, that is because we hid
 building Canvas behind functions describing render strategy. Let's split
 these functions to give an ability to explicitly pass bare canvas and its
 strategy.
+
+### Testing performance assumption
+
+We need to look at how implementations will behave in different conditions.
+Let's benchmark for rendering canvases with different properties: 
+
+  - small is containing 30-100 operations and 
+    big is containing 1000 - 10000 operations
+  - narrow with 100-1000 points widthwise and 
+    wide with 1000-10000 points.
+
+Run `mix benchmark`
+
+As expected map version is ~1.3x slower and consumes ~1.29x memory more
+than the array version. Map version becomes slower with bigger canvas size
+but negligible.
+

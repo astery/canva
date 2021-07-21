@@ -26,7 +26,7 @@ defmodule Canva.RenderableCanvas do
       |> RenderContext.set_size(canvas.size)
       |> RenderContext.set_whitespace_char(canvas.empty_char)
       |> then(fn render_ctx ->
-        Enum.reduce(canvas.operations, render_ctx, &RenderContext.apply/2)
+        Enum.reduce(canvas.operations, render_ctx, &RenderContext.apply(&2, &1))
       end)
 
     %__MODULE__{

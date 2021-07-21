@@ -6,6 +6,10 @@ defmodule CanvaUmbrella.MixProject do
       apps_path: "apps",
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
+      preferred_cli_env: [
+        benchmark: :test
+      ],
+      aliases: aliases(),
       deps: deps()
     ]
   end
@@ -14,6 +18,12 @@ defmodule CanvaUmbrella.MixProject do
     [
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev], runtime: false}
+    ]
+  end
+
+  defp aliases do
+    [
+      benchmark: ["run ./apps/canva/samples/canva_impls.exs"]
     ]
   end
 end

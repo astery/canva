@@ -23,6 +23,10 @@ defmodule Canva.MixProject do
   end
 
   defp deps do
-    []
+    [
+      # in all envs because is used for data generation
+      {:stream_data, "~> 0.5"},
+      {:benchee, "~> 1.0", only: :test}
+    ]
   end
 end
