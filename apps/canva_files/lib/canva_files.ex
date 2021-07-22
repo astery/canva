@@ -32,7 +32,7 @@ defmodule CanvaFiles do
     @doc """
     Returns saved Canvas path
     """
-    @callback save_canvas_to_file(Canvas.t()) :: {:ok, path()} | error()
+    @callback save_canvas_to_file(path(), Canvas.t()) :: :ok | error()
 
     @doc """
     List all available to load files
@@ -54,7 +54,15 @@ defmodule CanvaFiles do
 
   defdelegate init(), to: @adapter
   defdelegate load_canvas_from_file(path), to: @adapter
-  defdelegate save_canvas_to_file(canvas), to: @adapter
+  defdelegate save_canvas_to_file(path, canvas), to: @adapter
   defdelegate list_canvas_files(), to: @adapter
   defdelegate remove_canvas_file(path), to: @adapter
+
+  def save_canvas_to_file(canvas) do
+    id = generate_id()
+
+    with :ok <- save_canvas_to_file(id, canvas) do
+      {:ok, id}
+    end
+  end
 end

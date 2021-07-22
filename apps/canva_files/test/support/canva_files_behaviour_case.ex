@@ -19,8 +19,9 @@ defmodule CanvaFiles.BehaviourCase do
 
       test "saved canvas should be same as loaded" do
         canvas = build_canvas()
+        id = CanvaFiles.generate_id()
 
-        {:ok, id} = Behaviour.save_canvas_to_file(canvas)
+        :ok = Behaviour.save_canvas_to_file(id, canvas)
         assert {:ok, [id]} == Behaviour.list_canvas_files()
         assert {:ok, canvas} == Behaviour.load_canvas_from_file(id)
 

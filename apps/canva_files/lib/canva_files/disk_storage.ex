@@ -26,14 +26,12 @@ defmodule CanvaFiles.DiskStorage do
     end
   end
 
-  def save_canvas_to_file(canvas) do
-    id = CanvaFiles.generate_id()
-
+  def save_canvas_to_file(id, canvas) do
     id
     |> file_path()
     |> File.write(:erlang.term_to_binary(canvas))
     |> case do
-      :ok -> {:ok, id}
+      :ok -> :ok
       {:error, reason} -> {:error, %Error{reason: reason}}
     end
   end

@@ -23,10 +23,9 @@ defmodule CanvaFiles.MemoryStorage do
     end
   end
 
-  def save_canvas_to_file(canvas) do
-    id = CanvaFiles.generate_id()
+  def save_canvas_to_file(id, canvas) do
     true = :ets.insert(@name, {id, canvas})
-    {:ok, id}
+    :ok
   end
 
   def list_canvas_files() do
