@@ -117,7 +117,7 @@ defmodule CanvaServiceWeb.PageLiveTest do
     new_canvas_string = "updated"
 
     CanvaServiceMock
-    |> expect(:show_canvas, 1, fn ^canvas_id -> {:ok, new_canvas_string} end)
+    |> expect(:show_canvas, 2, fn ^canvas_id -> {:ok, new_canvas_string} end)
 
     CanvaService.Events.emit_canvas_updated(canvas_id)
 
