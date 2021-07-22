@@ -88,7 +88,7 @@ defmodule CanvaService do
 
     def generate_canvas() do
       # canvas 100x100 with 1-30 operations
-      canvas = Canva.Generators.canvas_generator(50..50, 50..50, 1..30) |> Enum.at(0)
+      canvas = Canva.Generators.canvas_generator(30..30, 30..30, 5..30, " ") |> Enum.at(0)
       CanvaFiles.save_canvas_to_file(canvas)
     end
 

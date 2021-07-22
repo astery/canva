@@ -9,6 +9,8 @@ defmodule Canva.Canvas do
   alias Canva.AsciiChar
   alias Canva.Operation
 
+  import Size
+
   @type t() :: %__MODULE__{
           size: Size.t(),
           operations: [Operation.t()],
@@ -17,7 +19,7 @@ defmodule Canva.Canvas do
 
   @doc "Returns an empty canvas of given size"
   @spec build(Size.t()) :: t()
-  def build(size), do: %__MODULE__{size: size}
+  def build(size) when valid_size(size), do: %__MODULE__{size: size}
 
   @doc "Adds operation"
   @spec add(t(), Operation.t()) :: t()
