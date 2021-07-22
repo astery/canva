@@ -39,3 +39,7 @@ CanvaService.add_operation("<id of canvas>", operation)
 
 - `mix test`
 - `mix benchmark`
+
+## Screenshot
+
+![screenshot](https://github.com/astery/canva/blob/master/pages/screenshot.png)]
