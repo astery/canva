@@ -18,6 +18,7 @@ defmodule CanvaServiceWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
+    live "/:id", PageLive, :show
   end
 
   # Other scopes may use custom stacks.

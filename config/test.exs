@@ -8,3 +8,4 @@ config :canva_service_web, CanvaServiceWeb.Endpoint,
 config :logger, level: :warn
 
 config :canva_files, module: CanvaFiles.MemoryStorage
+config :canva_service, :module, CanvaServiceMock

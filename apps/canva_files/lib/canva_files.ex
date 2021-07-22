@@ -15,7 +15,7 @@ defmodule CanvaFiles do
     @moduledoc false
 
     @type path :: String.t()
-    @type error :: {:error, %Error{}}
+    @type error :: {:error, %Error{reason: any()}}
 
     alias Canva.Canvas
 
@@ -47,7 +47,7 @@ defmodule CanvaFiles do
   end
 
   @behaviour Behaviour
-  @adapter Application.compile_env(:canva_files, :module, CanvaFiles.MemoryStorage)
+  @adapter Application.compile_env(:canva_files, :module, CanvaFiles.DiskStorage)
 
   def generate_id(), do: Nanoid.generate()
   def generate_id_alphabet(), do: Application.fetch_env!(:nanoid, :alphabet)

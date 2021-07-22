@@ -186,3 +186,8 @@ We have no iteractions with database, therefore use --no-ecto and
 On main page I want to see the list of links of canvases ids. Which will be
 updated if a new one appears. Easiest path to support a live updates will
 be Live View. That whould be starting point.
+
+When writing assertions on some text or html strings, I avoid to hard code
+them in the test, instead I use same view helpers that building these strings
+and use them in test. It helps to make tests less brittle in the face of
+changing a non-essential text.

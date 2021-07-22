@@ -29,7 +29,10 @@ defmodule CanvaService.MixProject do
 
   defp deps do
     [
-      {:phoenix_pubsub, "~> 2.0"}
+      {:canva, in_umbrella: true},
+      {:canva_files, in_umbrella: true},
+      {:phoenix_pubsub, "~> 2.0"},
+      {:hammox, "~> 0.5", only: :test}
     ]
   end
 
