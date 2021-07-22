@@ -36,7 +36,7 @@ After that do the same checks on the repository side.
 
 ### First test
 
-It's great that we already have acceptance tests in the assignment, we just
+It's great that we have already had acceptance tests in the assignment, we just
 need to think about how to name structs and functions around them.
 
 Essential pieces that can give insight to us are:
@@ -56,9 +56,9 @@ We should try to follow naming conventions from the assignment, it helps to
 establish the same language between people who describe a problem domain and
 developers who build an implementation of these ideas.
 
-If it is possible I would propose to the team to name the Canvas, a CanvasDocument,
+If it was possible, I would propose to the team to name the Canvas, a CanvasDocument,
 or just a Document, to avoid names clash with canvas related to rendering
-wish is not caring about its `id` or storing capabilities. But in many areas
+which does not care about its `id` or storing capabilities. But in many areas
 of knowledge, the names are well established and we just have to follow them.
 
 Let's try following:
@@ -74,41 +74,41 @@ Let's try following:
 Now we have minimal blocks to write acceptance tests. Let's create them and see
 how they fail.
 
-While I didn't have a confidence in the modules structure, I declare all of 
-them in single file or even inside a test. After I'm sure that where will be
-no drastical changes, I extract them in appropriate files.
+While I didn't have confidence in the modules structure, I declared all of 
+them in a single file or even inside a test. After I'm sure that there will not be
+drastical changes, I extract them in appropriate files.
 
 ### Defining Canvas module
 
-I want to have ability to compare different fill algorithms and canvas data
+I want to have an ability to compare different fill algorithms and canvas data
 holding structures, so I extract a Canvas protocol for that purpose.
 
-Also in order to import types I will declare them distinct modules.
+Also in order to import types I will declare them in distinct modules.
 
 ### First Canvas module implementation
 
-For the first implemtation I would go by easiest path. I choose a Map to store
-canvas state, and a fill algorithm which recursively goes in four empty directions.
+For the first implemtation I would go by the easiest path. I chose a Map to store
+canvas state, and a filled algorithm which recursively went in four empty directions.
 
 ### Splitting canvas from render artifacts
 
 In the future, I want to be able to pass canvas structure for saving, and it is better
-to avoid passing where any render artifacts. For that reason, I extract
+to avoid passing there any render artifacts. For that reason, I extract
 render and apply functions from the Canvas module to the new RenderContext protocol.
 But I still need that convenient structure to store operations and render 
 context simultaneously, so let's emerge RenderableCanvas.
 
 ### Extracting access behaviour
 
-There is a wide class of fill algorithms that rely on "get/set points" access
+There is a wide class of fill area algorithms that rely on "get/set points" access
 behaviour. I have an assumption that using :array module will give us a small 
 boost in reading and a lesser memory footprint.
 
-If we talking about here is more performance gain we can get, when
+If we are talking about the performance we can get, then
 we shall go and try another algorithm for Flood operation, but access implementation
-touches all operations, so we start from here.
+touches all the operations, therefore we start from here.
 
-Also, I want to pass algorithms as parameters to RenderContext as simple
+Also I want to pass algorithms as parameters to RenderContext as simple
 functions, it should help to test them in insolation (but on this stage
 my demands are covered with Canva integration test, so I'll use it only
 to test some specific edge cases), I will call that RenderContext 
@@ -119,10 +119,10 @@ implementation as RenderContexts.Composable
 We added all preparation work to easily add a new variant to represent points. 
 It will be based on :array, so call it ArrayPoints.
 
-We already have tests for its behaviour, therefore reuse them.
+We already have had tests for its behaviour, therefore reuse them.
 
 I'm planning to write some data generation functions for a future benchmark.
-And I saw a flaw in the Canva module api - where is no function we can pass
+And I saw a flaw in the Canva module api - there is no function we can pass
 bare Canvas module to apply and render it, that is because we hid
 building Canvas behind functions describing render strategy. Let's split
 these functions to give an ability to explicitly pass bare canvas and its
@@ -140,8 +140,8 @@ Let's benchmark for rendering canvases with different properties:
 
 Run `mix benchmark`
 
-As expected map version is ~1.3x slower and consumes ~1.29x memory more
-than the array version. Map version becomes slower with bigger canvas size
+As expected the map version is ~1.3x slower and consumes ~1.29x memory more
+than the array version. The map version becomes slower with a bigger canvas size
 but negligible.
 
 ### Deciding that to do next
@@ -152,27 +152,28 @@ I have plans to do:
   - add a scanning line flood algorithm version
   - add a renderer not based on points but, tree-based.
 
-But I also want to add persistence layer and web-interface, so I would
+But I also want to add persistence layer and a web-interface, so I would
 rather go in that direction
 
 ### Persistense layer
 
-When we started our journey I wrote what decided to store canvases in files.
+When we started our journey I wrote what I decided to store canvases in files.
 I will describe an interface to save files in order to ease testing
-of future features, and give ability to exchange that for s3 for example.
+of future features, and it will give ability to exchange implementation 
+for s3 for example.
 
 ### Implementing CanvaFiles
 
-First of all we describe desired behaviour in test. That should be easy
-recursive definition we want to recieve same canvas struct that we stored
+First of all we describe desired behaviour in test. That will be a
+recursive definition - we want to recieve the same canvas struct that we stored
 earlier.
 
 ### Implementing CanvaService
 
-Usually Canva module would contain service logic and CanvaWeb
-will be web-interface.
+Usually Canva module would contain a service logic and CanvaWeb
+will be a web-interface.
 
-But Canva name is busy with our rendering library entity.
+But the Canva name is busy by our rendering library.
 
 So let's add two applications:
 
@@ -183,11 +184,30 @@ So let's add two applications:
 We have no iteractions with database, therefore use --no-ecto and 
 --no-gettext flags in builder.
 
-On main page I want to see the list of links of canvases ids. Which will be
+On the main page I want to see the list of links of canvases ids. Which will be
 updated if a new one appears. Easiest path to support a live updates will
-be Live View. That whould be starting point.
+be a Live View. That whould be the starting point.
 
 When writing assertions on some text or html strings, I avoid to hard code
-them in the test, instead I use same view helpers that building these strings
+them in the test, instead I use the same view helpers that building these strings
 and use them in test. It helps to make tests less brittle in the face of
 changing a non-essential text.
+
+### Implementing live update
+
+In order to get a live update, we need to subscribe for `canvas_updated`
+events. Easiest and robust option use Phoenix.PubSub or Registry.
+We already have a phoenix pub sub in our supervisor tree, so let's use it.
+
+Inside CanvaService.add_operation we will be sending `canvas_updated`
+into topic `canvas:<id>`. in the LiveView mount we subscibe on the topic, 
+in handle_info we request new data.
+
+We could do some optimizations with cache to prevent reading
+same file twice in short amout of time, but not now.
+
+### Last thoughts
+
+As more time invested the more interesting details come up along the way.
+I've tried to make this journey interesting to me, from these intententions
+we saw a canvas module with ability to change render strategies.

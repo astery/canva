@@ -1,7 +1,7 @@
 defmodule CanvaServiceWeb.PageLiveTest do
   use CanvaServiceWeb.ConnCase
 
-  import Mox
+  import Hammox
   import Phoenix.LiveViewTest
   import CanvaServiceWeb.PageLive.Messages
 
@@ -48,7 +48,7 @@ defmodule CanvaServiceWeb.PageLiveTest do
     CanvaServiceMock
     |> expect(:list_canvases, 2, fn -> {:ok, []} end)
     |> expect(:generate_canvas, fn -> {:ok, canvas_id} end)
-    |> expect(:show_canvas, fn ^canvas_id -> {:ok, canvas_string} end)
+    |> expect(:show_canvas, 2, fn ^canvas_id -> {:ok, canvas_string} end)
 
     {:ok, view, _} = live(conn, "/")
 
@@ -68,7 +68,7 @@ defmodule CanvaServiceWeb.PageLiveTest do
 
     CanvaServiceMock
     |> expect(:list_canvases, 2, fn -> {:ok, []} end)
-    |> expect(:show_canvas, 2, fn ^canvas_id -> {:ok, canvas_string} end)
+    |> expect(:show_canvas, 4, fn ^canvas_id -> {:ok, canvas_string} end)
 
     {:ok, page_live, disconnected_html} = live(conn, "/" <> canvas_id)
 
@@ -81,11 +81,49 @@ defmodule CanvaServiceWeb.PageLiveTest do
 
     CanvaServiceMock
     |> expect(:list_canvases, 2, fn -> {:ok, []} end)
-    |> expect(:show_canvas, 2, fn ^canvas_id -> {:error, :not_found} end)
+    |> expect(:show_canvas, 4, fn ^canvas_id -> {:error, :not_found} end)
 
     {:ok, page_live, disconnected_html} = live(conn, "/" <> canvas_id)
 
     assert disconnected_html =~ not_found()
     assert render(page_live) =~ not_found()
+  end
+
+  test "should change canvas if link clicked", %{conn: conn} do
+    canvas_id = CanvaFiles.generate_id()
+    canvas_string = "current"
+
+    CanvaServiceMock
+    |> expect(:list_canvases, 2, fn -> {:ok, [canvas_id]} end)
+    |> expect(:show_canvas, 1, fn ^canvas_id -> {:ok, canvas_string} end)
+
+    {:ok, view, _} = live(conn, "/")
+
+    assert view
+           |> element(".canvas-link[data-id='#{canvas_id}']")
+           |> render_click() =~ canvas_string
+  end
+
+  test "should update if canvas changed", %{conn: conn} do
+    canvas_id = CanvaFiles.generate_id()
+    canvas_string = "current"
+
+    CanvaServiceMock
+    |> expect(:list_canvases, 2, fn -> {:ok, [canvas_id]} end)
+    |> expect(:show_canvas, 4, fn ^canvas_id -> {:ok, canvas_string} end)
+
+    {:ok, view, _} = live(conn, "/" <> canvas_id)
+
+    new_canvas_string = "updated"
+
+    CanvaServiceMock
+    |> expect(:show_canvas, 1, fn ^canvas_id -> {:ok, new_canvas_string} end)
+
+    CanvaService.Events.emit_canvas_updated(canvas_id)
+
+    html = view |> render()
+
+    assert html =~ new_canvas_string
+    refute html =~ canvas_string
   end
 end

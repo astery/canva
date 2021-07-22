@@ -77,12 +77,8 @@ defmodule CanvaService do
     def list_canvases() do
       CanvaFiles.list_canvas_files()
       |> case do
-        {:ok, list} ->
-          {:ok, list}
-
-        {:error, e} ->
-          Logger.error(Exception.message(e))
-          :error
+        {:ok, list} -> {:ok, list}
+        errors -> handle_errors(errors)
       end
     end
 
@@ -95,16 +91,27 @@ defmodule CanvaService do
     def show_canvas(id) do
       CanvaFiles.load_canvas_from_file(id)
       |> case do
-        {:ok, canvas} ->
-          {:ok, Canva.render_canvas(canvas)}
-
-        {:error, %{reason: :enoent}} ->
-          {:error, :not_found}
-
-        {:error, e} ->
-          Logger.error(Exception.message(e))
-          :error
+        {:ok, canvas} -> {:ok, Canva.render_canvas(canvas)}
+        errors -> handle_errors(errors)
       end
+    end
+
+    def add_operation(id, operation) do
+      with {:ok, canvas} <- CanvaFiles.load_canvas_from_file(id),
+           canvas <- Canva.add_operations(canvas, [operation]),
+           :ok <- CanvaFiles.save_canvas_to_file(id, canvas) do
+        CanvaService.Events.emit_canvas_updated(id)
+        :ok
+      else
+        errors -> handle_errors(errors)
+      end
+    end
+
+    defp handle_errors({:error, %{reason: :enoent}}), do: {:error, :not_found}
+
+    defp handle_errors({:error, e}) do
+      Logger.error(Exception.message(e))
+      :error
     end
   end
 
@@ -116,4 +123,5 @@ defmodule CanvaService do
   defdelegate list_canvases(), to: @adapter
   defdelegate generate_canvas(), to: @adapter
   defdelegate show_canvas(id), to: @adapter
+  defdelegate add_operation(id, operation), to: @adapter
 end

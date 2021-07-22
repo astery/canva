@@ -6,9 +6,14 @@ defmodule CanvaServiceWeb.PageLive do
   use CanvaServiceWeb, :live_view
 
   alias CanvaServiceWeb.PageLive.Messages
+  alias CanvaService.Events
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
+    if connected?(socket) do
+      Events.subscribe_on_canvas_events(id, socket.root_pid)
+    end
+
     {:ok,
      socket
      |> assign_current_canvas(id)
@@ -44,6 +49,16 @@ defmodule CanvaServiceWeb.PageLive do
   @impl true
   def handle_params(unsigned_params, _uri, socket) do
     {:noreply, assign_current_canvas(socket, unsigned_params["id"])}
+  end
+
+  @impl true
+  def handle_info({:canvas_updated, id}, socket) do
+    socket =
+      socket
+      |> assign_current_canvas(id)
+      |> push_patch(to: Routes.page_path(socket, :show, id))
+
+    {:noreply, socket}
   end
 
   defp assign_canvases_ids(socket) do

@@ -21,7 +21,7 @@
       <ul>
         <%= for canvas_id <- @canvases_ids do %>
           <li>
-            <%= live_patch canvas_id, to: Routes.page_path(@socket, :show, canvas_id) %>
+            <%= live_patch canvas_id, to: Routes.page_path(@socket, :show, canvas_id), data: [id: canvas_id], class: "canvas-link" %>
           </li>
         <% end %>
       </ul>

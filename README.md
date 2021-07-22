@@ -22,6 +22,19 @@ Consider to add local git hooks to prevent pushing malformed commit:
 
 `cp .hooks/* .git/hooks`
 
+## Run
+
+- Start server `iex -S mix phx.server`
+- Generate couple of canvases
+- Try live update by running in console:
+
+```elixir
+import Canva.Generators
+size = %Canva.Size{width: 30, height: 30} # Current size of generated canvases
+operation = operation_generator(size) |> Enum.at(0) # generate operation
+CanvaService.add_operation("<id of canvas>", operation) 
+```
+
 ## Running tests
 
 - `mix test`
