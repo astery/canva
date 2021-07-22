@@ -13,10 +13,20 @@ defmodule CanvaTest do
     &Canva.build_composable_array_based_render_ctx/0
   ]
 
+  use ExUnitProperties
+  import Canva.Generators
+
   for strategy <- canvas_strategies do
     describe inspect(strategy) do
       setup do
         %{strategy: unquote(strategy)}
+      end
+
+      property "render_canvas/2 should not emit eny errors" do
+        check all canvas <- canvas_generator(1..50) do
+          string = Canva.render_canvas(canvas)
+          assert is_binary(string)
+        end
       end
 
       test "render/2 should render area filled with spaces on empty canvas", ctx do

@@ -15,7 +15,7 @@ Consider to read my internal reflections about development process in [pages/ref
 
 ## Setup
 
-1. `mix deps.get`
+1. `mix setup`
 1. `mix dialyzer --plt` # Will take a long time for the first run
 
 Consider to add local git hooks to prevent pushing malformed commit:

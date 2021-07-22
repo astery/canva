@@ -68,6 +68,9 @@ defmodule Canva do
     defguard out_of_bounds(size, x, y)
              when x < 0 or x >= size.width or
                     y < 0 or y >= size.height
+
+    defguard valid_size(size)
+             when size.width > 0 and size.height > 0
   end
 
   defmodule AsciiChar do

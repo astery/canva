@@ -1,15 +1,15 @@
-defmodule CanvaFiles.MixProject do
+defmodule CanvaService.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :canva_files,
+      app: :canva_service,
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.12",
+      elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -19,8 +19,8 @@ defmodule CanvaFiles.MixProject do
 
   def application do
     [
-      extra_applications: [:logger],
-      mod: {CanvaFiles.Application, []}
+      mod: {CanvaService.Application, []},
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -30,7 +30,9 @@ defmodule CanvaFiles.MixProject do
   defp deps do
     [
       {:canva, in_umbrella: true},
-      {:nanoid, "~> 2.0.5"}
+      {:canva_files, in_umbrella: true},
+      {:phoenix_pubsub, "~> 2.0"},
+      {:hammox, "~> 0.5", only: :test}
     ]
   end
 

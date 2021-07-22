@@ -28,10 +28,13 @@ defmodule Canva.Generators do
     canvas_height = canvas_size.height
     half_canvas_width = Integer.floor_div(canvas_size.width, 2)
     half_canvas_height = Integer.floor_div(canvas_size.height, 2)
+    quater_canvas_width = Integer.floor_div(canvas_size.width, 4)
+    quater_canvas_height = Integer.floor_div(canvas_size.height, 4)
 
     rect_size_generator =
       frequency([
-        {4, size_generator(0..half_canvas_width, 0..half_canvas_height)},
+        {9, size_generator(0..quater_canvas_width, 0..quater_canvas_height)},
+        {1, size_generator(0..half_canvas_width, 0..half_canvas_height)},
         {1, size_generator(0..canvas_width, 0..canvas_height)}
       ])
 
@@ -59,11 +62,11 @@ defmodule Canva.Generators do
     ])
   end
 
-  def canvas_generator(width_range, height_range \\ nil, operations_count \\ 0..1000) do
+  def canvas_generator(width_range, height_range \\ nil, operations_count \\ 0..1000, char \\ nil) do
     gen all canvas_size <- size_generator(width_range, height_range),
             operations <- list_of(operation_generator(canvas_size), length: operations_count),
             empty <- canva_char_generator() do
-      %Canvas{size: canvas_size, operations: operations, empty_char: empty}
+      %Canvas{size: canvas_size, operations: operations, empty_char: char || empty}
     end
   end
 end

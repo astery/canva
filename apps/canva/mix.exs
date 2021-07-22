@@ -11,6 +11,10 @@ defmodule Canva.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
+      preferred_cli_env: [
+        benchmark: :test
+      ],
+      aliases: aliases(),
       deps: deps()
     ]
   end
@@ -26,6 +30,13 @@ defmodule Canva.MixProject do
       # in all envs because is used for data generation
       {:stream_data, "~> 0.5"},
       {:benchee, "~> 1.0", only: :test}
+    ]
+  end
+
+  defp aliases do
+    [
+      benchmark: ["run ./samples/canva_impls.exs"],
+      setup: ["deps.get"]
     ]
   end
 end

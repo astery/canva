@@ -166,3 +166,28 @@ of future features, and give ability to exchange that for s3 for example.
 First of all we describe desired behaviour in test. That should be easy
 recursive definition we want to recieve same canvas struct that we stored
 earlier.
+
+### Implementing CanvaService
+
+Usually Canva module would contain service logic and CanvaWeb
+will be web-interface.
+
+But Canva name is busy with our rendering library entity.
+
+So let's add two applications:
+
+  - `:canva_service` - implementing actual user actions. 
+     Depends on :canva and :canva_files apps.
+  - `:canva_service_web` - implementing a web-interface for :canva_service. 
+
+We have no iteractions with database, therefore use --no-ecto and 
+--no-gettext flags in builder.
+
+On main page I want to see the list of links of canvases ids. Which will be
+updated if a new one appears. Easiest path to support a live updates will
+be Live View. That whould be starting point.
+
+When writing assertions on some text or html strings, I avoid to hard code
+them in the test, instead I use same view helpers that building these strings
+and use them in test. It helps to make tests less brittle in the face of
+changing a non-essential text.

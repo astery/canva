@@ -36,7 +36,7 @@ defmodule CanvaFiles.BehaviourCase do
       end
 
       defp build_canvas() do
-        canvas_generator(0..100, 0..100, 0..100)
+        canvas_generator(1..100, 1..100, 0..100)
         |> Enum.at(0)
       end
     end

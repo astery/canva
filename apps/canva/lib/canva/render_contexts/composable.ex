@@ -43,7 +43,7 @@ defmodule Canva.RenderContexts.Composable do
   @type t() :: %__MODULE__{
           size: Size.t(),
           empty_char: AsciiChar.t(),
-          points: [Points.t()],
+          points: Points.t(),
           build_points_fn: build_points_fn(),
           apply_rectangle_fn: apply_rectangle_fn(),
           apply_flood_fn: apply_flood_fn()
@@ -56,7 +56,11 @@ defmodule Canva.RenderContexts.Composable do
   @doc "Helper delegates call to Points.set and updates them"
   @spec set(t(), integer(), integer(), AsciiChar.t()) :: t() | :out_of_bounds
   def set(canvas, x, y, char) do
-    update_in(canvas, [Access.key!(:points)], &Points.set(&1, x, y, char))
+    Points.set(canvas.points, x, y, char)
+    |> case do
+      :out_of_bounds -> :out_of_bounds
+      points -> %{canvas | points: points}
+    end
   end
 
   @doc """
@@ -89,7 +93,9 @@ defmodule Canva.RenderContexts.Composable do
     alias Canva.Operations.Rectangle
     alias Canva.Operations.Flood
 
-    def set_size(%Composable{} = ctx, size),
+    import Size
+
+    def set_size(%Composable{} = ctx, size) when valid_size(size),
       do: %{
         ctx
         | size: size,
@@ -115,6 +121,7 @@ defmodule Canva.RenderContexts.Composable do
           Composable.get(canvas, x, y)
           |> case do
             nil -> canvas.empty_char
+            :out_of_bounds -> raise "inconsistent state"
             char -> char
           end
         end ++ ["\n"]
